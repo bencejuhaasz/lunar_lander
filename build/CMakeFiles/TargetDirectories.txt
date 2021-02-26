@@ -1,0 +1,4 @@
+/home/user/projects/lunar_lander/build/CMakeFiles/rebuild_cache.dir
+/home/user/projects/lunar_lander/build/CMakeFiles/edit_cache.dir
+/home/user/projects/lunar_lander/build/CMakeFiles/test_graphics.dir
+/home/user/projects/lunar_lander/build/CMakeFiles/graphics.dir

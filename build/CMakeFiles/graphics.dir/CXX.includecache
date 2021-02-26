@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/user/projects/lunar_lander/char2.h
+
+/home/user/projects/lunar_lander/graphics.cpp
+graphics.hpp
+/home/user/projects/lunar_lander/graphics.hpp
+SDL2/SDL.h
+-
+SDL2/SDL_ttf.h
+-
+cstdlib
+-
+algorithm
+-
+iostream
+-
+char2.h
+/home/user/projects/lunar_lander/char2.h
+keytbl.h
+/home/user/projects/lunar_lander/keytbl.h
+
+/home/user/projects/lunar_lander/graphics.hpp
+string
+-
+
+/home/user/projects/lunar_lander/keytbl.h
+
