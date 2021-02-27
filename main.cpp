@@ -78,16 +78,13 @@ int main(int argc, char const *argv[]) {
       eagle.force_act(v);
     }
     if (ev.type==ev_timer) {
-      eagle.update_speed();
-      eagle.draw();
-      gout << move_to(0,0);
-      gout << refresh;
-    }
-    if (ev.type==ev_timer) {
       phys_vector v;
       v.x = 0;
       v.y = 1;
       eagle.force_act(v);
+      eagle.update_speed();
+      eagle.draw();
+      gout << refresh;
     }
 
   }
