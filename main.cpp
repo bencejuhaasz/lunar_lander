@@ -6,6 +6,25 @@
 using namespace genv;
 using namespace std;
 
+struct surface {
+  std::vector<int> s;
+  void generate() {
+    for (size_t i = 0; i < 1280; i+=100) {
+      s.push_back(400 + ( std::rand() % ( 719 - 400 + 1 ) ));
+    }
+  }
+  void draw() {
+    int j = 0;
+    gout << color(255,255,255);
+    gout << move_to(0,719);
+    for (size_t i = 0; i < 1280; i+=100) {
+      gout << line_to(i,s[j]);
+      j++;
+    }
+    gout << line_to(1279,719);
+  }
+};
+
 struct phys_vector {
   int x = 0;
   int y = 0;
@@ -50,6 +69,8 @@ int main(int argc, char const *argv[]) {
   gout.open(1280, 720);
 
   lander eagle;
+  surface moon;
+  moon.generate();
   eagle.draw();
   gout << refresh;
   event ev;
@@ -84,6 +105,7 @@ int main(int argc, char const *argv[]) {
       eagle.force_act(v);
       eagle.update_speed();
       eagle.draw();
+      moon.draw();
       gout << refresh;
     }
 
