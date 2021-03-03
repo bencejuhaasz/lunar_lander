@@ -23,6 +23,9 @@ struct surface {
     }
     gout << line_to(1279,719);
   }
+  std::vector<int> bounce_back_radar_waves() {
+    return s;
+  }
 };
 
 struct phys_vector {
@@ -42,6 +45,7 @@ phys_vector calc_resultant(std::vector<phys_vector> s) {
 struct lander {
   private: int pos_x=100;
   int pos_y=100;
+  std::vector<int> surface;
   phys_vector speed;
   public:void force_act(phys_vector v) {
     speed.x+=v.x;
@@ -62,6 +66,21 @@ struct lander {
     gout << line_to(pos_x, pos_y+20);
     gout << line_to(pos_x, pos_y);
   }
+ public:void radar_scan(surface moon) {
+   surface = moon.bounce_back_radar_waves();
+ }
+ public:bool detect_collision() {
+   for (size_t i = pos_x; i < pos_x+20; i++) {
+     for (size_t j = pos_y; j < pos_y; j++) {
+       int sector = pos_x / surface.size();
+       int x = sector*100;
+       int y = surface[sector];
+       if () {
+         /* code */
+       }
+     }
+   }
+ }
 };
 
 
@@ -75,8 +94,8 @@ int main(int argc, char const *argv[]) {
   gout << refresh;
   event ev;
   gin.timer(150);
-
-  while (gin >> ev) {
+  int exit = 0;
+  while (gin >> ev&&exit==0) {
     if (ev.type==ev_key && ev.keycode==119) {
       cout << "up\n";
       phys_vector v;
