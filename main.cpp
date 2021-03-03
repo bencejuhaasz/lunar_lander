@@ -75,6 +75,7 @@ struct lander {
        int sector = pos_x / surface.size();
        int x = sector*100;
        int y = surface[sector];
+       float m = 
        if () {
          /* code */
        }
