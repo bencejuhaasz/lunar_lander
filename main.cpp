@@ -73,11 +73,14 @@ struct lander {
    for (size_t i = pos_x; i < pos_x+20; i++) {
      for (size_t j = pos_y; j < pos_y; j++) {
        int sector = pos_x / surface.size();
-       int x = sector*100;
-       int y = surface[sector];
-       float m = 
-       if () {
-         /* code */
+       int x1 = sector*100;
+       int y1 = surface[sector];
+       int x2 = (sector+1)*100;
+       int y2 = surface[sector+1];
+       float m = (y2-y1)/(x2-x1);
+       float b = y2-(m*y1);
+       if (pos_y-(m*pos_x+b)<0.001) {
+         return 0;
        }
      }
    }
