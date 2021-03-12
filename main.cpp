@@ -12,6 +12,7 @@ struct surface {
     for (size_t i = 0; i < 1280; i+=100) {
       s.push_back(400 + ( std::rand() % ( 719 - 400 + 1 ) ));
     }
+    s.push_back(719);
   }
   void draw() {
     int j = 0;
@@ -42,10 +43,10 @@ phys_vector calc_resultant(std::vector<phys_vector> s) {
   return v;
 }
 
-struct lander {
+class lander {
   private: int pos_x=100;
   int pos_y=100;
-  std::vector<int> surface;
+  std::vector<int> s;
   phys_vector speed;
   public:void force_act(phys_vector v) {
     speed.x+=v.x;
@@ -67,23 +68,22 @@ struct lander {
     gout << line_to(pos_x, pos_y);
   }
  public:void radar_scan(surface moon) {
-   surface = moon.bounce_back_radar_waves();
+   s = moon.bounce_back_radar_waves();
  }
  public:bool detect_collision() {
-   for (size_t i = pos_x; i < pos_x+20; i++) {
-     for (size_t j = pos_y; j < pos_y; j++) {
-       int sector = pos_x / surface.size();
-       int x1 = sector*100;
-       int y1 = surface[sector];
-       int x2 = (sector+1)*100;
-       int y2 = surface[sector+1];
-       float m = (y2-y1)/(x2-x1);
-       float b = y2-(m*y1);
-       if (pos_y-(m*pos_x+b)<0.001) {
-         return 0;
-       }
-     }
+   std::cout << s[pos_x/100] << " " << s[(pos_x/100)+1] << '\n';
+   int x1 = (pos_x/100)*100;
+   int y1 = s[pos_x/100];
+
+   int x2 = ((pos_x/100)+1)*100;
+   int y2 = s[pos_x/100+1];
+   float m = (y2-y1) / (x2-x1);
+   float b = y2-m*x2;
+   std::cout << pos_y << " " << (m*pos_x+b) << '\n';
+   if ((pos_y+20)>(m*pos_x+b)) {
+     return true;
    }
+   return false;
  }
 };
 
@@ -129,9 +129,19 @@ int main(int argc, char const *argv[]) {
       eagle.update_speed();
       eagle.draw();
       moon.draw();
-      gout << refresh;
+      eagle.radar_scan(moon);
+      if (eagle.detect_collision()) {
+        while (gin >>ev) {
+          gout << move_to(600,300);
+          gout << text("Game Over, press 'up' to restart");
+          gout << refresh;
+          if (ev.type==ev_key&&ev.keycode==119) {
+            break;
+          }
+        }
+      }
     }
-
+  gout << refresh;
   }
   return 0;
 }
