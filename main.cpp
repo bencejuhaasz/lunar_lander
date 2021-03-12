@@ -71,7 +71,6 @@ class lander {
    s = moon.bounce_back_radar_waves();
  }
  public:bool detect_collision() {
-   std::cout << s[pos_x/100] << " " << s[(pos_x/100)+1] << '\n';
    int x1 = (pos_x/100)*100;
    int y1 = s[pos_x/100];
 
@@ -79,7 +78,6 @@ class lander {
    int y2 = s[pos_x/100+1];
    float m = (y2-y1) / (x2-x1);
    float b = y2-m*x2;
-   std::cout << pos_y << " " << (m*pos_x+b) << '\n';
    if ((pos_y+20)>(m*pos_x+b)) {
      return true;
    }
