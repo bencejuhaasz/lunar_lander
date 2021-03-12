@@ -91,10 +91,10 @@ class lander {
 int main(int argc, char const *argv[]) {
   gout.open(1280, 720);
 
-  lander eagle;
+  lander * eagle = new lander;
   surface moon;
   moon.generate();
-  eagle.draw();
+  eagle->draw();
   gout << refresh;
   event ev;
   gin.timer(150);
@@ -105,37 +105,39 @@ int main(int argc, char const *argv[]) {
       phys_vector v;
       v.x = 0;
       v.y = -2;
-      eagle.force_act(v);
+      eagle->force_act(v);
     }
     if (ev.type==ev_key && ev.keycode==97) {
       cout << "left\n";
       phys_vector v;
       v.x = 1;
       v.y = 0;
-      eagle.force_act(v);
+      eagle->force_act(v);
     }
     if (ev.type==ev_key && ev.keycode==100) {
       std::cout << "right" << '\n';
       phys_vector v;
       v.x = -1;
       v.y = 0;
-      eagle.force_act(v);
+      eagle->force_act(v);
     }
     if (ev.type==ev_timer) {
       phys_vector v;
       v.x = 0;
       v.y = 1;
-      eagle.force_act(v);
-      eagle.update_speed();
-      eagle.draw();
+      eagle->force_act(v);
+      eagle->update_speed();
+      eagle->draw();
       moon.draw();
-      eagle.radar_scan(moon);
-      if (eagle.detect_collision()) {
+      eagle->radar_scan(moon);
+      if (eagle->detect_collision()) {
         while (gin >>ev) {
           gout << move_to(600,300);
           gout << text("Game Over, press 'up' to restart");
           gout << refresh;
           if (ev.type==ev_key&&ev.keycode==119) {
+            delete eagle;
+            eagle = new lander;
             break;
           }
         }
