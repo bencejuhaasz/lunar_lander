@@ -120,6 +120,87 @@ int main(int argc, char const *argv[]) {
   event ev;
   gin.timer(170);
   int exit = 0;
+  bool exit_over = false;
+  bool start_over = false;
+  bool hints_over = false;
+  while (gin >> ev) {
+    gout << color(0,0,0);
+    gout << move_to(0,0);
+    gout << box_to(1279,719);
+    gout << move_to(600,300);
+    if (start_over) {
+      gout << color(0,255,0);
+    }
+    else {
+      gout << color(255,255,255);
+    }
+    gout << text("Start");
+    gout << move_to(600,400);
+    if (hints_over) {
+      gout << color(0,255,0);
+    }
+    else {
+      gout << color(255,255,255);
+    }
+    gout << text("Hints");
+    gout << move_to(600,500);
+    if (exit_over) {
+      gout << color(0,255,0);
+    }
+    else {
+      gout << color(255,255,255);
+    }
+    gout << text("Exit");
+    gout << refresh;
+    if (ev.type==ev_mouse) {
+      if (ev.pos_y>490) {
+        exit_over = true;
+      }
+      else {
+        exit_over = false;
+      }
+    }
+    if (ev.type==ev_mouse) {
+      if (ev.pos_y>390&&ev.pos_y<400) {
+        hints_over = true;
+      }
+      else {
+        hints_over = false;
+      }
+    }
+    if (ev.type==ev_mouse) {
+      if (ev.pos_y>290&&ev.pos_y<300) {
+        start_over = true;
+      }
+      else {
+        start_over = false;
+      }
+    }
+    if (ev.type==ev_mouse && ev.button==btn_left) {
+      if (start_over) {
+        break;
+      }
+      if (hints_over) {
+        gout << move_to(0,0);
+        gout << color(0,0,0);
+        gout << box_to(1279,719);
+        gout << color(255,255,255);
+        gout << move_to(600,300);
+        gout << text("In game controls: Up:W Left Thruster:A Right Thruster:D");
+        gout << move_to(600,400);
+        gout << text("Press W to go back to menu");
+        gout <<refresh;
+        while (gin >> ev) {
+          if (ev.type==ev_key && ev.keycode==119) {
+            break;
+          }
+        }
+      }
+      if (exit_over) {
+        return 0;
+      }
+    }
+  }
   while (gin >> ev&&exit==0) {
     if (ev.type==ev_key && ev.keycode==119) {
       phys_vector v;
