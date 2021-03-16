@@ -12,13 +12,17 @@ struct surface {
     for (size_t i = 0; i < 1280; i+=100) {
       s.push_back(400 + ( std::rand() % ( 719 - 400 + 1 ) ));
     }
+    s[5] = s[6];
     s.push_back(719);
   }
   void draw() {
     int j = 0;
-    gout << color(255,255,255);
     gout << move_to(0,719);
     for (size_t i = 0; i < 1280; i+=100) {
+      gout << color(255,255,255);
+      if (i==600) {
+        gout << color(0,255,0);
+      }
       gout << line_to(i,s[j]);
       j++;
     }
@@ -61,11 +65,9 @@ class lander {
     gout << color(0,0,0);
     gout << box_to(1279,719);
     gout << color(0,255,0);
-    gout << move_to(pos_x, pos_y);
-    gout << line_to(pos_x+20, pos_y);
-    gout << line_to(pos_x+20, pos_y+20);
-    gout << line_to(pos_x, pos_y+20);
-    gout << line_to(pos_x, pos_y);
+    gout << move_to(pos_x-10,pos_y-10);
+    gout << box(5,5);
+
   }
  public:void radar_scan(surface moon) {
    s = moon.bounce_back_radar_waves();
@@ -76,10 +78,31 @@ class lander {
 
    int x2 = ((pos_x/100)+1)*100;
    int y2 = s[pos_x/100+1];
-   float m = (y2-y1) / (x2-x1);
+   float m = ((float)y2-(float)y1) / ((float)x2-(float)x1);
    float b = y2-m*x2;
-   if ((pos_y+20)>(m*pos_x+b)) {
+   if ((pos_y)-(m*pos_x+b)>5) {
      return true;
+   }
+   if ((pos_y)-(m*(pos_x-5)+b)>5) {
+     return true;
+   }
+   return false;
+ }
+ public:bool detect_land() {
+   int x1 = (pos_x/100)*100;
+   int y1 = s[pos_x/100];
+
+   int x2 = ((pos_x/100)+1)*100;
+   int y2 = s[pos_x/100+1];
+   float m = ((float)y2-(float)y1) / ((float)x2-(float)x1);
+   float b = y2-m*x2;
+   if (x1==500&&(speed.x+speed.y<13)) {
+     if ((pos_y)-(m*pos_x+b)>5) {
+       return true;
+     }
+     if ((pos_y)-(m*(pos_x-5)+b)>5) {
+       return true;
+     }
    }
    return false;
  }
@@ -88,32 +111,29 @@ class lander {
 
 int main(int argc, char const *argv[]) {
   gout.open(1280, 720);
-
+  srand(time(NULL));
   lander * eagle = new lander;
   surface moon;
   moon.generate();
   eagle->draw();
   gout << refresh;
   event ev;
-  gin.timer(150);
+  gin.timer(170);
   int exit = 0;
   while (gin >> ev&&exit==0) {
     if (ev.type==ev_key && ev.keycode==119) {
-      cout << "up\n";
       phys_vector v;
       v.x = 0;
       v.y = -2;
       eagle->force_act(v);
     }
     if (ev.type==ev_key && ev.keycode==97) {
-      cout << "left\n";
       phys_vector v;
       v.x = 1;
       v.y = 0;
       eagle->force_act(v);
     }
     if (ev.type==ev_key && ev.keycode==100) {
-      std::cout << "right" << '\n';
       phys_vector v;
       v.x = -1;
       v.y = 0;
@@ -123,15 +143,11 @@ int main(int argc, char const *argv[]) {
       phys_vector v;
       v.x = 0;
       v.y = 1;
-      eagle->force_act(v);
-      eagle->update_speed();
-      eagle->draw();
-      moon.draw();
       eagle->radar_scan(moon);
-      if (eagle->detect_collision()) {
+      if (eagle->detect_land()) {
         while (gin >>ev) {
-          gout << move_to(600,300);
-          gout << text("Game Over, press 'up' to restart");
+          gout << move_to(100,100);
+          gout << text("Good landing ! press 'W' to restart");
           gout << refresh;
           if (ev.type==ev_key&&ev.keycode==119) {
             delete eagle;
@@ -140,8 +156,26 @@ int main(int argc, char const *argv[]) {
           }
         }
       }
+      if (eagle->detect_collision()&&!eagle->detect_land()) {
+        while (gin >>ev) {
+          gout << move_to(100,100);
+          gout << text("Game Over, you crashed ! press 'W' to restart");
+          gout << refresh;
+          if (ev.type==ev_key&&ev.keycode==119) {
+            delete eagle;
+            eagle = new lander;
+            break;
+          }
+        }
+      }
+      else {
+        eagle->force_act(v);
+        eagle->update_speed();
+        eagle->draw();
+        moon.draw();
+        gout << refresh;
+      }
     }
-  gout << refresh;
   }
   return 0;
 }
