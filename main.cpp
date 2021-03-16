@@ -124,6 +124,9 @@ int main(int argc, char const *argv[]) {
   bool start_over = false;
   bool hints_over = false;
   while (gin >> ev) {
+    if (ev.type==ev_key && ev.keycode==key_escape) {
+      return 0;
+    }
     gout << color(0,0,0);
     gout << move_to(0,0);
     gout << box_to(1279,719);
@@ -196,6 +199,9 @@ int main(int argc, char const *argv[]) {
           if (ev.type==ev_key && ev.keycode==119) {
             break;
           }
+          if (ev.type==ev_key && ev.keycode==key_escape) {
+            return 0;
+          }
         }
       }
       if (exit_over) {
@@ -203,7 +209,10 @@ int main(int argc, char const *argv[]) {
       }
     }
   }
-  while (gin >> ev&&exit==0) {
+  while (gin >> ev) {
+    if (ev.type==ev_key && ev.keycode==key_escape) {
+      return 0;
+    }
     if (ev.type==ev_key && ev.keycode==119) {
       phys_vector v;
       v.x = 0;
@@ -234,11 +243,13 @@ int main(int argc, char const *argv[]) {
           gout << text("Good landing ! press 'W' to restart");
           gout << refresh;
           if (ev.type==ev_key&&ev.keycode==119) {
-            std::cout << "1" << '\n';
             delete eagle;
             eagle = new lander;
             dontcheck = true;
             break;
+          }
+          if (ev.type==ev_key && ev.keycode==key_escape) {
+            return 0;
           }
         }
       }
@@ -248,15 +259,16 @@ int main(int argc, char const *argv[]) {
           gout << text("Game Over, you crashed ! press 'W' to restart");
           gout << refresh;
           if (ev.type==ev_key&&ev.keycode==119) {
-            std::cout << "2" << '\n';
             delete eagle;
             eagle = new lander;
             break;
           }
+          if (ev.type==ev_key && ev.keycode==key_escape) {
+            return 0;
+          }
         }
       }
       else {
-        std::cout << "3" << '\n';
         eagle->force_act(v);
         eagle->update_speed();
         eagle->draw();
