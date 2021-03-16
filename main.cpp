@@ -143,6 +143,7 @@ int main(int argc, char const *argv[]) {
       phys_vector v;
       v.x = 0;
       v.y = 1;
+      bool dontcheck = false;
       eagle->radar_scan(moon);
       if (eagle->detect_land()) {
         while (gin >>ev) {
@@ -150,18 +151,21 @@ int main(int argc, char const *argv[]) {
           gout << text("Good landing ! press 'W' to restart");
           gout << refresh;
           if (ev.type==ev_key&&ev.keycode==119) {
+            std::cout << "1" << '\n';
             delete eagle;
             eagle = new lander;
+            dontcheck = true;
             break;
           }
         }
       }
-      if (eagle->detect_collision()&&!eagle->detect_land()) {
+      if (!dontcheck&&eagle->detect_collision()) {
         while (gin >>ev) {
           gout << move_to(100,100);
           gout << text("Game Over, you crashed ! press 'W' to restart");
           gout << refresh;
           if (ev.type==ev_key&&ev.keycode==119) {
+            std::cout << "2" << '\n';
             delete eagle;
             eagle = new lander;
             break;
@@ -169,6 +173,7 @@ int main(int argc, char const *argv[]) {
         }
       }
       else {
+        std::cout << "3" << '\n';
         eagle->force_act(v);
         eagle->update_speed();
         eagle->draw();
