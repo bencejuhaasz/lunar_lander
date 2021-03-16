@@ -1,1 +1,0 @@
-/usr/bin/c++    -rdynamic CMakeFiles/test_graphics.dir/main.cpp.o  -o test_graphics -lSDL2 -lSDL2_ttf libgraphics.a -lSDL2 -lSDL2_ttf 
