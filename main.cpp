@@ -185,6 +185,8 @@ int main(int argc, char const *argv[]) {
         gout << color(0,0,0);
         gout << box_to(1279,719);
         gout << color(255,255,255);
+        gout << move_to(600,200);
+        gout << text("Land slowly in the green area !");
         gout << move_to(600,300);
         gout << text("In game controls: Up:W Left Thruster:A Right Thruster:D");
         gout << move_to(600,400);
