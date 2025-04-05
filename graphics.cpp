@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <algorithm>
+#include <map>
 #include <iostream>
 
 
@@ -65,6 +66,49 @@ namespace
         else
             return sym;
     }
+    const std::map<std::string, int> keycodes({
+        {"Up",genv::keycode_t::key_up},
+        {"Down",genv::keycode_t::key_down},
+        {"Left",genv::keycode_t::key_left},
+        {"Right",genv::keycode_t::key_right},
+        {"Escape",genv::keycode_t::key_escape},
+        {"Tab",genv::keycode_t::key_tab},
+        {"Backspace",genv::keycode_t::key_backspace},
+        {"Return",genv::keycode_t::key_enter},
+        {"Insert",genv::keycode_t::key_insert},
+        {"Delete",genv::keycode_t::key_delete},
+        {"Home",genv::keycode_t::key_home},
+        {"End",genv::keycode_t::key_end},
+        {"PageUp",genv::keycode_t::key_pgup},
+        {"PageDown",genv::keycode_t::key_pgdn},
+        {"Left Ctrl",genv::keycode_t::key_lctrl},
+        {"Left Shift",genv::keycode_t::key_lshift},
+        {"Left Alt",genv::keycode_t::key_lalt},
+        {"Right Ctrl",genv::keycode_t::key_rctrl},
+        {"Right Shift",genv::keycode_t::key_rshift},
+        {"Right Alt",genv::keycode_t::key_ralt},
+        {"Left Windows",genv::keycode_t::key_lwin},
+        {"Right Windows",genv::keycode_t::key_rwin},
+        {"Menu",genv::keycode_t::key_menu},
+        {"Numlock",genv::keycode_t::key_numl},
+        {"CapsLock",genv::keycode_t::key_capsl},
+        {"ScrollLock",genv::keycode_t::key_scrl},
+        {"F1",genv::keycode_t::key_f1},
+        {"F2",genv::keycode_t::key_f2},
+        {"F3",genv::keycode_t::key_f3},
+        {"F4",genv::keycode_t::key_f4},
+        {"F5",genv::keycode_t::key_f5},
+        {"F6",genv::keycode_t::key_f6},
+        {"F7",genv::keycode_t::key_f7},
+        {"F8",genv::keycode_t::key_f8},
+        {"F9",genv::keycode_t::key_f9},
+        {"F10",genv::keycode_t::key_f10},
+        {"F11",genv::keycode_t::key_f11},
+        {"F12",genv::keycode_t::key_f12},
+        {"F13",genv::keycode_t::key_f13},
+        {"F14",genv::keycode_t::key_f14},
+        {"F15",genv::keycode_t::key_f15}
+        });
 
     Uint32 timer_event(Uint32 interval, void*)
     {
@@ -135,7 +179,7 @@ genv::groutput::groutput()
     buf = 0;
     if (TTF_Init() < 0)
       exit(1);
-      
+
 }
 
 genv::groutput::~groutput()
@@ -337,8 +381,8 @@ void genv::canvas::draw_text(const std::string& str)
             }
         }
     }
-    else { 
-		
+    else {
+
 		// SDL_ttf
         // get color from draw_clr:
         unsigned char rc = (draw_clr & 0xff0000) >> 16,
@@ -352,6 +396,7 @@ void genv::canvas::draw_text(const std::string& str)
         } else {
             t = TTF_RenderUTF8_Solid(font, str.c_str(), text_clr);
         }
+        if (!t) return;
         SDL_Rect offset;
         offset.x = pt_x;
         offset.y = pt_y;
@@ -390,7 +435,7 @@ bool genv::canvas::load_font(const std::string& fname, int fontsize, bool antial
   loaded_font_file_name=fname;
   font_size=fontsize;
   antialiastext=antialias;
-  
+
   return true;
 }
 
@@ -425,9 +470,45 @@ void genv::grinput::timer(int wait)
     }
 }
 
+int utf8charcount(std::string str) {
+    char * s = &(str[0]);
+    int len = 0;
+    while (*s) len += (*s++ & 0xc0) != 0x80;
+    return len;
+}
+
+std::vector<int> genv::utf8_character_index(std::string str) {
+	std::vector<int> res;
+    for (size_t i=0;i<str.length();i++) { 
+		res.push_back(i);
+		while ( (str[i+1] & 0xc0) == 0x80) { //c++11: all strings are null terminated
+			i++;
+		}
+	}
+	res.push_back(str.length());
+	return res;
+}
+
+std::vector<std::string> genv::utf8_character_split(std::string str) {
+	std::vector<std::string> res;
+    for (size_t i=0;i<str.length();i++) { 
+		int len=0;
+		do{
+			len++;
+		} while( (str[i+len] & 0xc0) == 0x80) ;  //c++11: all strings are null terminated
+		res.push_back(str.substr(i,len));
+		i+=len-1;
+		
+	}
+	
+	return res;
+	
+}
+
 genv::grinput& genv::grinput::wait_event(event& ev)
 {
     static event nullev = { 0, 0, 0, 0, 0 };
+    static int lastx, lasty;
     ev = nullev;
     if (quit)
         return *this;
@@ -448,14 +529,36 @@ genv::grinput& genv::grinput::wait_event(event& ev)
                 quit = true;
                 got = true;
                 break;
+            case SDL_TEXTINPUT:
+                /* Add new text onto the end of our text */
+                {
+                    std::string c = se.text.text;
+					//std::cout << c << std::endl;
+                    ev.keycode = c[0];
+					ev.keyutf8 = c;
+                }
+                got = true;
+                break;
             case SDL_KEYUP:
             case SDL_KEYDOWN:
                 ev.type = ev_key;
-                ev.keycode = mkkeycode(se.key.keysym.sym, se.key.keysym.sym);
-                ev.keycode *= (se.type == SDL_KEYUP ? -1 : 1);
+				ev.keyutf8="";
+                //ev.keycode = mkkeycode(se.key.keysym.sym, se.key.keysym.sym);
 				ev.keyname = SDL_GetKeyName(SDL_GetKeyFromScancode(se.key.keysym.scancode));
-                got = ev.keycode != 0;
-                break;
+				if (keycodes.find(ev.keyname)!=keycodes.end()) {
+                    ev.keycode = keycodes.at(ev.keyname);
+                    //std::cout <<"* " ;
+                    got=true;
+				} else {
+				    ev.keycode = mkkeycode(se.key.keysym.sym, se.key.keysym.sym);
+				}
+                ev.keycode *= (se.type == SDL_KEYUP ? -1 : 1);
+                //std::cout << ev.keycode << std::endl;
+                //std::cout << ev.keyname.length() << " " << charcount(ev.keyname) << std::endl;
+                if (!got)got = utf8charcount(ev.keyname)>1; // HACK: single character named keys should be textinput, but maybe not always..
+                if (ev.keycode == key_space) ev.keyutf8=" "; //convenience function. Enter and Tab does not render well with current setup, so only space is supported here.
+				break;
+
             case SDL_MOUSEBUTTONDOWN:
             case SDL_MOUSEBUTTONUP:
                 ev.type = ev_mouse;
@@ -463,19 +566,23 @@ genv::grinput& genv::grinput::wait_event(event& ev)
                 ev.button *= (se.button.state == SDL_RELEASED ? -1 : 1);
                 ev.pos_x = se.button.x;
                 ev.pos_y = se.button.y;
+                lastx = se.button.x;
+                lasty = se.button.y;
                 got = true;
                 break;
             case SDL_MOUSEMOTION:
                 ev.type = ev_mouse;
                 ev.pos_x = se.motion.x;
                 ev.pos_y = se.motion.y;
+                lastx=se.motion.x;
+                lasty=se.motion.y;
                 got = true;
                 break;
             case SDL_MOUSEWHEEL:
                 ev.type = ev_mouse;
                 ev.button = se.wheel.y>0?btn_wheelup:btn_wheeldown;
-                ev.pos_x = se.motion.x;
-                ev.pos_y = se.motion.y;
+                ev.pos_x = lastx;
+                ev.pos_y = lasty;
                 got = true;
                 break;
             case SDL_USEREVENT:
@@ -494,6 +601,11 @@ genv::grinput& genv::grinput::instance()
 {
     static grinput single_inst;
     return single_inst;
+}
+
+void genv::grinput::textmode(bool on) {
+    if (on) SDL_StartTextInput();
+    else SDL_StopTextInput();
 }
 
 int genv::canvas::cascent() const
@@ -532,6 +644,6 @@ int genv::canvas::twidth(const std::string& s) const
     int w,h;
     TTF_SizeUTF8(font, s.c_str(), &w, &h);
     return w;
-	
+
 }
 
