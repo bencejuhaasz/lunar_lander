@@ -2,10 +2,11 @@
 #define GRAPHICS_HPP_INCLUDED
 
 #include <string>
+#include <vector>
 
 struct SDL_Surface;
 struct SDL_Window;
-struct _TTF_Font;
+struct TTF_Font;
 struct SDL_Renderer;
 
 namespace genv
@@ -57,8 +58,8 @@ protected:
 
     template <typename T>
     inline int sgn(const T& a) {
-		if (a<0) return -1; 
-		if (a>0) return 1; 
+		if (a<0) return -1;
+		if (a>0) return 1;
 		return 0;
     }
 
@@ -67,7 +68,7 @@ protected:
     SDL_Surface* buf;
     int draw_clr;
     bool transp;
-    _TTF_Font* font;
+    TTF_Font* font;
     bool antialiastext;
     std::string loaded_font_file_name;
     int font_size;
@@ -240,6 +241,7 @@ struct event
     int time;
     int type;
 	std::string keyname;
+	std::string keyutf8;
 
 };
 
@@ -254,9 +256,9 @@ public:
 
     operator const void*() const
     { if (quit) return 0; else return this; }
-
+    void textmode(bool on);
 private:
-    grinput() : quit(false) {}
+    grinput() : quit(false) {textmode(true);}
     bool quit;
 };
 
@@ -266,6 +268,9 @@ extern grinput& gin;
 // Event reader operator
 inline grinput& operator >> (grinput& inp, event& ev)
 { return inp.wait_event(ev); }
+
+std::vector<int> utf8_character_index(std::string str);
+std::vector<std::string> utf8_character_split(std::string str) ;
 
 }
 
